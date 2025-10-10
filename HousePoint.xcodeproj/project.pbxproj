@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		14667F6A2E86EBF0004F4A30 /* HousePointApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14667F692E86EBF0004F4A30 /* HousePointApp.swift */; };
+		14667F6E2E86EBF2004F4A30 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 14667F6D2E86EBF2004F4A30 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		14667F742E86EBF2004F4A30 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,17 +29,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		14667F662E86EBF0004F4A30 /* HousePoint.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HousePoint.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		14667F662E86EBF0004F4A30 /* HousePoint.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = HousePoint.app; path = "/Users/fifi/Documents/HousePoint/HousePoint/build/Debug-iphoneos/HousePoint.app"; sourceTree = "<absolute>"; };
+		14667F692E86EBF0004F4A30 /* HousePointApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HousePointApp.swift; sourceTree = "<group>"; };
+		14667F6D2E86EBF2004F4A30 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		14667F732E86EBF2004F4A30 /* HousePointTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HousePointTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		14667F7D2E86EBF2004F4A30 /* HousePointUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HousePointUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		14667F682E86EBF0004F4A30 /* HousePoint */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = HousePoint;
-			sourceTree = "<group>";
-		};
 		14667F762E86EBF2004F4A30 /* HousePointTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = HousePointTests;
@@ -43,6 +45,16 @@
 		14667F802E86EBF2004F4A30 /* HousePointUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = HousePointUITests;
+			sourceTree = "<group>";
+		};
+		14B027E22E98A14E0039B280 /* Models 2 */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Models 2";
+			sourceTree = "<group>";
+		};
+		14B027ED2E98A1520039B280 /* Views  */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Views ";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,17 +87,19 @@
 		14667F5D2E86EBF0004F4A30 = {
 			isa = PBXGroup;
 			children = (
-				14667F682E86EBF0004F4A30 /* HousePoint */,
+				14667F692E86EBF0004F4A30 /* HousePointApp.swift */,
+				14B027E22E98A14E0039B280 /* Models 2 */,
+				14B027ED2E98A1520039B280 /* Views  */,
+				14667F6D2E86EBF2004F4A30 /* Assets.xcassets */,
 				14667F762E86EBF2004F4A30 /* HousePointTests */,
-				14667F802E86EBF2004F4A30 /* HousePointUITests */,
 				14667F672E86EBF0004F4A30 /* Products */,
+				14667F802E86EBF2004F4A30 /* HousePointUITests */,
 			);
 			sourceTree = "<group>";
 		};
 		14667F672E86EBF0004F4A30 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				14667F662E86EBF0004F4A30 /* HousePoint.app */,
 				14667F732E86EBF2004F4A30 /* HousePointTests.xctest */,
 				14667F7D2E86EBF2004F4A30 /* HousePointUITests.xctest */,
 			);
@@ -108,7 +122,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				14667F682E86EBF0004F4A30 /* HousePoint */,
+				14B027E22E98A14E0039B280 /* Models 2 */,
+				14B027ED2E98A1520039B280 /* Views  */,
 			);
 			name = HousePoint;
 			packageProductDependencies = (
@@ -212,6 +227,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				14667F6E2E86EBF2004F4A30 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,6 +252,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				14667F6A2E86EBF0004F4A30 /* HousePointApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
