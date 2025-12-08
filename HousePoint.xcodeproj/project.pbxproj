@@ -29,11 +29,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		14667F662E86EBF0004F4A30 /* HousePoint.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = HousePoint.app; path = "/Users/fifi/Documents/HousePoint/HousePoint/build/Debug-iphoneos/HousePoint.app"; sourceTree = "<absolute>"; };
 		14667F692E86EBF0004F4A30 /* HousePointApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HousePointApp.swift; sourceTree = "<group>"; };
 		14667F6D2E86EBF2004F4A30 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		14667F732E86EBF2004F4A30 /* HousePointTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HousePointTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		14667F7D2E86EBF2004F4A30 /* HousePointUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HousePointUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		149FEFAF2EE6165C005664D9 /* HousePoint.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HousePoint.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -102,6 +102,7 @@
 			children = (
 				14667F732E86EBF2004F4A30 /* HousePointTests.xctest */,
 				14667F7D2E86EBF2004F4A30 /* HousePointUITests.xctest */,
+				149FEFAF2EE6165C005664D9 /* HousePoint.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -129,7 +130,7 @@
 			packageProductDependencies = (
 			);
 			productName = HousePoint;
-			productReference = 14667F662E86EBF0004F4A30 /* HousePoint.app */;
+			productReference = 149FEFAF2EE6165C005664D9 /* HousePoint.app */;
 			productType = "com.apple.product-type.application";
 		};
 		14667F722E86EBF2004F4A30 /* HousePointTests */ = {

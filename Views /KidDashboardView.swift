@@ -3,119 +3,58 @@ import SwiftUI
 struct KidDashboardView: View {
     @EnvironmentObject var store: HousePointStore
     let currentUserId: UUID
-
-    @State private var showRedeemAlert = false
-    @State private var redeemSuccess = false
-    @State private var redeemMessage = ""
+    
+    @State private var showAlert = false
+    @State private var alertText = ""
 
     var body: some View {
         VStack(alignment: .leading) {
             if let user = store.users.first(where: { $0.id == currentUserId }) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Hi \(user.username)!")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.purple)
-
-                    Text("⭐ Stars: \(user.points)")
-                        .font(.title2)
-                        .foregroundColor(.orange)
-
-                    // Redeem points button
-                    Button(action: {
-                        redeemPoints(for: user)
-                    }) {
-                        Text("Redeem Points")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(user.points >= 10 ? Color.green : Color.gray)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                    }
-                    .disabled(user.points < 10)
-                    .padding(.vertical, 5)
-                }
-                .padding()
-
+                
+                Text("Hi \(user.username)!").font(.largeTitle).bold()
+                Text("⭐ Stars: \(user.points)").font(.title2).foregroundColor(.orange)
+                
                 List {
-                    Section(header: Text("Assigned Chores").font(.headline).foregroundColor(.blue)) {
+                    Section("Assigned Chores") {
                         ForEach(store.chores.filter { $0.assignedTo == currentUserId && !$0.isCompleted }) { chore in
                             ChoreRow(chore: chore)
-                                .environmentObject(store)
                         }
                     }
-
-                    Section(header: Text("Completed Chores").font(.headline).foregroundColor(.green)) {
+                    
+                    Section("Pending Approval") {
+                        ForEach(store.chores.filter { $0.assignedTo == currentUserId && $0.isMarkedDoneByChild }) { chore in
+                            Text("\(chore.title) (Pending)")
+                        }
+                    }
+                    
+                    Section("Approved Chores") {
                         ForEach(store.chores.filter { $0.assignedTo == currentUserId && $0.isCompleted }) { chore in
-                            HStack {
-                                Text(chore.title)
-                                    .strikethrough()
-                                Spacer()
-                                Button(action: {
-                                    store.unapproveChore(chore)
-                                }) {
-                                    Label("Undo", systemImage: "arrow.uturn.backward.circle.fill")
-                                        .foregroundColor(.orange)
-                                }
-                            }
-                            .padding(.vertical, 5)
+                            Text(chore.title).strikethrough()
                         }
                     }
                 }
-                .listStyle(InsetGroupedListStyle())
-            } else {
-                Text("Child not found")
-                    .foregroundColor(.red)
-            }
-        }
-        .navigationTitle("Kid Dashboard")
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    store.logout()
-                }) {
-                    Label("Logout", systemImage: "arrowshape.turn.up.left.fill")
-                        .foregroundColor(.red)
+                
+                Button("Redeem Reward (25 points)") {
+                    if user.points < 10 {
+                        alertText = "Not enough points!"
+                    } else {
+                        if let reward = store.rewards.first {
+                            store.requestReward(reward, by: user)
+                            alertText = "Reward request sent to parent!"
+                        } else {
+                            alertText = "No rewards available!"
+                        }
+                    }
+                    showAlert = true
                 }
+                .padding()
+                .background(Color.green)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+                
             }
         }
-        .alert(isPresented: $showRedeemAlert) {
-            Alert(
-                title: Text(redeemSuccess ? "Success" : "Error"),
-                message: Text(redeemMessage),
-                dismissButton: .default(Text("OK"))
-            )
-        }
+        .alert(alertText, isPresented: $showAlert) { Button("OK", role: .cancel) {} }
+        .navigationTitle("Kid Dashboard")
     }
-
-    private func redeemPoints(for user: User) {
-        let requiredPoints = 10
-
-        if user.points >= requiredPoints {
-            if let index = store.users.firstIndex(where: { $0.id == user.id }) {
-                store.users[index].points -= requiredPoints
-                redeemSuccess = true
-                redeemMessage = "🎉 You redeemed \(requiredPoints) points!"
-            }
-        } else {
-            redeemSuccess = false
-            redeemMessage = "You need at least \(requiredPoints) points to redeem."
-        }
-
-        showRedeemAlert = true
-    }
-}
-
-#Preview {
-    let mockStore = HousePointStore()
-
-    let child = User(id: UUID(), username: "Alex", password: "", points: 10, isParent: false)
-    let chore1 = Chore(id: UUID(), title: "Take out trash", assignedTo: child.id, isCompleted: false)
-    let chore2 = Chore(id: UUID(), title: "Wash dishes", assignedTo: child.id, isCompleted: true)
-
-    mockStore.users = [child]
-    mockStore.chores = [chore1, chore2]
-
-    return KidDashboardView(currentUserId: child.id)
-        .environmentObject(mockStore)
 }

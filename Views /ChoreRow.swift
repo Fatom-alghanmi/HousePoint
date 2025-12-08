@@ -3,28 +3,37 @@ import SwiftUI
 struct ChoreRow: View {
     @EnvironmentObject var store: HousePointStore
     var chore: Chore
-
+    
     var body: some View {
         HStack {
-            Text(chore.title)
-            Spacer()
-            if !chore.isCompleted {
-                Button("Done") {
-                    store.approveChore(chore)
+            if let image = chore.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 60, height: 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            
+            VStack(alignment: .leading) {
+                Text(chore.title).font(.headline)
+                if let desc = chore.description {
+                    Text(desc).font(.subheadline).foregroundColor(.gray)
                 }
-                .buttonStyle(.bordered)
-            } else {
-                Text("✅")
+            }
+            
+            Spacer()
+            
+            if !chore.isCompleted && !chore.isMarkedDoneByChild {
+                Button("Done") {
+                    store.markChoreDoneByChild(chore)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            
+            if chore.isMarkedDoneByChild {
+                Text("Pending")
+                    .foregroundColor(.orange)
             }
         }
     }
 }
-#Preview {
-    let store = HousePointStore()
-    store.registerParent(username: "parent", password: "1234")
-    store.addChild(username: "child")
-
-    return ChoreRow(chore: store.chores.first ?? Chore(id: UUID(), title: "Sample", assignedTo: nil, isCompleted: false))
-        .environmentObject(store)
-}
-
