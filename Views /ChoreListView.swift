@@ -10,7 +10,8 @@ struct ChoreListView: View {
 
     var body: some View {
         List {
-            ForEach(store.chores) { chore in
+            // Show only chores in the current family
+            ForEach(store.choresInFamily) { chore in
                 VStack(alignment: .leading, spacing: 6) {
 
                     // TITLE + COMPLETION
@@ -53,8 +54,9 @@ struct ChoreListView: View {
                             Text("Assigned to:")
                             Picker("", selection: binding(for: chore)) {
                                 Text("Unassigned").tag(UUID?.none)
-                                ForEach(store.users.filter { !$0.isParent }) { user in
-                                    Text(user.username).tag(Optional(user.id))
+                                // Only show children from the same family
+                                ForEach(store.childrenInFamily) { child in
+                                    Text(child.username).tag(Optional(child.id))
                                 }
                             }
                             .pickerStyle(MenuPickerStyle())
@@ -88,7 +90,7 @@ struct ChoreListView: View {
         }
     }
 
-    // BINDING FOR ASSIGNMENT (Parent only)
+    // MARK: - Binding for Assignment Picker (Parent only)
     private func binding(for chore: Chore) -> Binding<UUID?> {
         guard let index = store.chores.firstIndex(where: { $0.id == chore.id }) else {
             return .constant(nil)
@@ -108,21 +110,28 @@ struct ChoreListView: View {
     }
 }
 
+// MARK: - Preview
 #Preview {
     let mockStore = HousePointStore()
+    let familyId1 = UUID()
+    let familyId2 = UUID()
 
-    // Sample users
-    let parent = User(id: UUID(), username: "Parent", password: "1234", points: 0, isParent: true)
-    let child1 = User(id: UUID(), username: "Alex", password: "", points: 0, isParent: false)
-    let child2 = User(id: UUID(), username: "Jamie", password: "", points: 0, isParent: false)
+    let parent1 = User(id: UUID(), username: "Parent1", password: "1234", points: 0, isParent: true, familyId: familyId1)
+    let child1A = User(id: UUID(), username: "Alex", password: "", points: 0, isParent: false, familyId: familyId1)
+    let child1B = User(id: UUID(), username: "Jamie", password: "", points: 0, isParent: false, familyId: familyId1)
 
-    mockStore.users = [parent, child1, child2]
+    let parent2 = User(id: UUID(), username: "Parent2", password: "1234", points: 0, isParent: true, familyId: familyId2)
+    let child2A = User(id: UUID(), username: "Sam", password: "", points: 0, isParent: false, familyId: familyId2)
 
-    // Sample chores
-    let chore1 = Chore(id: UUID(), title: "Take out trash", description: "Put it outside before 8am", assignedTo: child1.id, isCompleted: false)
-    let chore2 = Chore(id: UUID(), title: "Wash dishes", description: nil, assignedTo: nil, isCompleted: false)
+    mockStore.users = [parent1, child1A, child1B, parent2, child2A]
 
-    mockStore.chores = [chore1, chore2]
+    let chore1 = Chore(id: UUID(), title: "Take out trash", description: "Put it outside before 8am", assignedTo: child1A.id, isCompleted: false, isMarkedDoneByChild: false, imageData: nil, familyId: familyId1)
+    let chore2 = Chore(id: UUID(), title: "Wash dishes", description: nil, assignedTo: nil, isCompleted: false, isMarkedDoneByChild: false, imageData: nil, familyId: familyId1)
+    let chore3 = Chore(id: UUID(), title: "Vacuum living room", description: nil, assignedTo: child2A.id, isCompleted: false, isMarkedDoneByChild: false, imageData: nil, familyId: familyId2)
+
+    mockStore.chores = [chore1, chore2, chore3]
+
+    mockStore.currentUserId = parent1.id
 
     return ChoreListView()
         .environmentObject(mockStore)

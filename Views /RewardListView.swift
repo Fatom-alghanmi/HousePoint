@@ -5,7 +5,7 @@ struct RewardListView: View {
 
     var body: some View {
         List {
-            ForEach(store.rewards) { reward in
+            ForEach(store.rewardsInFamily) { reward in
                 HStack {
                     Text(reward.name)
                     Spacer()
@@ -16,20 +16,4 @@ struct RewardListView: View {
         }
         .navigationTitle("Rewards")
     }
-}
-
-#Preview {
-    let mockStore = HousePointStore()
-
-    // Sample rewards
-    let sampleRewards = [
-        Reward(id: UUID(), name: "Extra Screen Time", cost: 10),
-        Reward(id: UUID(), name: "Ice Cream", cost: 5),
-        Reward(id: UUID(), name: "Movie Night", cost: 15)
-    ]
-
-    mockStore.rewards = sampleRewards
-
-    return RewardListView()
-        .environmentObject(mockStore)
 }

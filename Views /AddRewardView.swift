@@ -7,45 +7,42 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct AddRewardView: View {
     @EnvironmentObject var store: HousePointStore
-    @Environment(\.presentationMode) var presentationMode
-
     @State private var name = ""
-    @State private var cost = ""
-    @State private var showError = false
+    @State private var cost = 10
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             Text("Add New Reward")
-                .font(.largeTitle)
-                .padding()
+                .font(.title)
 
             TextField("Reward name", text: $name)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+                .textFieldStyle(.roundedBorder)
 
-            TextField("Cost (stars)", text: $cost)
-                .keyboardType(.numberPad)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-
-            if showError {
-                Text("Please enter valid data.")
-                    .foregroundColor(.red)
-            }
+            Stepper("Cost: \(cost) ⭐", value: $cost, in: 1...100)
 
             Button("Add Reward") {
-                if let costInt = Int(cost), !name.trimmingCharacters(in: .whitespaces).isEmpty {
-                    store.rewards.append(Reward(id: UUID(), name: name, cost: costInt))
-                    presentationMode.wrappedValue.dismiss()
-                } else {
-                    showError = true
-                }
+                guard let familyId = store.currentFamilyId else { return }
+
+                let reward = Reward(
+                    id: UUID(),
+                    name: name,
+                    cost: cost,
+                    familyId: familyId   // ✅ REQUIRED
+                )
+
+                store.rewards.append(reward)
+                store.saveData()
+
+                name = ""
+                cost = 10
             }
             .buttonStyle(.borderedProminent)
-            .padding()
         }
+        .padding()
     }
 }
 

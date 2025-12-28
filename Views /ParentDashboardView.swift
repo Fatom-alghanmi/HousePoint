@@ -16,10 +16,9 @@ struct ParentDashboardView: View {
     }
 
     // MARK: - Sections
-
     private var kidsSection: some View {
         Section(header: Text("Kids Dashboard")) {
-            ForEach(store.users.filter { !$0.isParent }) { kid in
+            ForEach(store.childrenInFamily) { kid in
                 NavigationLink(destination: ChildApprovalView(childId: kid.id)
                                 .environmentObject(store)) {
                     HStack {
@@ -31,11 +30,7 @@ struct ParentDashboardView: View {
                     }
                 }
             }
-
-            NavigationLink("Register Child") {
-                RegisterChildView()
-                    .environmentObject(store)
-            }
+            // ✅ Register Child link removed
         }
     }
 
@@ -69,7 +64,10 @@ struct ParentDashboardView: View {
 
     private var pendingRewardsSection: some View {
         Section(header: Text("Pending Reward Requests")) {
-            ForEach(store.pendingRewardRequests) { request in
+            ForEach(store.pendingRewardRequests.filter { request in
+                guard let kid = store.users.first(where: { $0.id == request.userId }) else { return false }
+                return kid.familyId == store.currentFamilyId
+            }) { request in
                 if let kid = store.users.first(where: { $0.id == request.userId }) {
                     HStack {
                         VStack(alignment: .leading) {
@@ -96,28 +94,4 @@ struct ParentDashboardView: View {
             }
         }
     }
-}
-
-// MARK: - Preview
-
-#Preview {
-    let mockStore = HousePointStore()
-
-    let parent = User(id: UUID(), username: "Parent", password: "1234", points: 0, isParent: true)
-    let child1 = User(id: UUID(), username: "Alex", password: "", points: 5, isParent: false)
-    let child2 = User(id: UUID(), username: "Jamie", password: "", points: 10, isParent: false)
-
-    let chore1 = Chore(id: UUID(), title: "Take out trash", assignedTo: child1.id, isCompleted: true)
-    let chore2 = Chore(id: UUID(), title: "Wash dishes", assignedTo: child2.id, isCompleted: false)
-
-    let reward1 = Reward(id: UUID(), name: "Ice Cream", cost: 10)
-    let pendingReward = PendingReward(id: UUID(), userId: child1.id, reward: reward1)
-
-    mockStore.users = [parent, child1, child2]
-    mockStore.chores = [chore1, chore2]
-    mockStore.rewards = [reward1]
-    mockStore.pendingRewardRequests = [pendingReward]
-
-    return ParentDashboardView()
-        .environmentObject(mockStore)
 }

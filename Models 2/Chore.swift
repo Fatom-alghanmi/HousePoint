@@ -13,9 +13,15 @@ struct Chore: Identifiable, Codable {
     var title: String
     var description: String?
     var assignedTo: UUID?
+    
     var isCompleted: Bool = false        // Approved by parent
     var isMarkedDoneByChild: Bool = false // Marked done by child
+    
     var imageData: Data? = nil            // Store image as Data
+    var dueDate: Date?
+    var basePoints: Int = 10
+    var familyId: UUID
+
 
     var image: UIImage? {
             get { imageData.flatMap { UIImage(data: $0) } }

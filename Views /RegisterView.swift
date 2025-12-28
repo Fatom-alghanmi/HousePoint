@@ -30,19 +30,13 @@ struct RegisterView: View {
                     .padding()
             }
 
-            Button("Register") {
-                if username.trimmingCharacters(in: .whitespaces).isEmpty ||
-                   password.isEmpty {
-                    errorMessage = "Please fill in both fields."
+            Button("Register Parent") {
+                if let error = store.registerParent(username: username, password: password) {
+                    errorMessage = error
                     showError = true
-                    return
-                }
-
-                if store.registerParent(username: username, password: password) {
-                    presentationMode.wrappedValue.dismiss()
                 } else {
-                    errorMessage = "Registration failed. Only one parent allowed or username taken."
-                    showError = true
+                    showError = false
+                    presentationMode.wrappedValue.dismiss()
                 }
             }
             .buttonStyle(.borderedProminent)

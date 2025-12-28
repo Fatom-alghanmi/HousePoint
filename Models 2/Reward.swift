@@ -11,4 +11,5 @@ struct Reward: Identifiable, Codable {
     let id: UUID
     var name: String
     var cost: Int
+    var familyId: UUID
 }
