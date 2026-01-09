@@ -1,10 +1,3 @@
-//
-//  AddChildView.swift
-//  HousePoint
-//
-//  Created by Fatom on 2025-10-10.
-//
-
 import SwiftUI
 
 struct AddChildView: View {
@@ -15,35 +8,58 @@ struct AddChildView: View {
     @State private var showError = false
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Add New Child")
-                .font(.largeTitle)
-                .padding()
+        ZStack {
+            LinearGradient(colors: [Color.purple.opacity(0.3), Color.blue.opacity(0.3)],
+                           startPoint: .topLeading,
+                           endPoint: .bottomTrailing)
+                .ignoresSafeArea()
 
-            TextField("Child's username", text: $username)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+            VStack(spacing: 20) {
+                Text("Add New Child")
+                    .font(.largeTitle)
+                    .bold()
+                    .foregroundColor(.white)
+                    .padding(.top)
 
-            if showError {
-                Text("Please enter a valid name.")
-                    .foregroundColor(.red)
-            }
+                VStack(spacing: 16) {
+                    TextField("Child's username", text: $username)
+                        .padding()
+                        .background(Color.white.opacity(0.9))
+                        .cornerRadius(10)
+                        .shadow(radius: 3)
 
-            Button("Add Child") {
-                if store.addChild(username: username) {
-                    presentationMode.wrappedValue.dismiss()
-                } else {
-                    showError = true
+                    if showError {
+                        Text("Please enter a valid name.")
+                            .foregroundColor(.red)
+                    }
+
+                    Button(action: addChild) {
+                        Text("Add Child")
+                            .bold()
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.green)
+                            .cornerRadius(10)
+                            .shadow(radius: 5)
+                    }
                 }
+                .padding()
+                .background(Color.black.opacity(0.3))
+                .cornerRadius(20)
+                .shadow(radius: 10)
+
+                Spacer()
             }
-            .buttonStyle(.borderedProminent)
             .padding()
         }
     }
-}
 
-#Preview {
-    let store = HousePointStore()
-    return AddChildView()
-        .environmentObject(store)
+    private func addChild() {
+        if store.addChild(username: username) {
+            presentationMode.wrappedValue.dismiss()
+        } else {
+            showError = true
+        }
+    }
 }

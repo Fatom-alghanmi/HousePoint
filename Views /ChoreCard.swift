@@ -1,20 +1,18 @@
 //
-//  ChoreRow.swift
+//  ChoreCard.swift
 //  HousePoint
 //
-//  Created by Fatom
-//
 
-import SwiftUI // ✅ This fixes 'View' and '@EnvironmentObject'
+import SwiftUI
 
-struct ChoreRow: View {
+struct ChoreCard: View {
     @EnvironmentObject var store: HousePointStore
     var chore: Chore
 
     var body: some View {
         HStack(spacing: 12) {
 
-            // Chore Image
+            // MARK: - Chore Image
             if let image = chore.image {
                 Image(uiImage: image)
                     .resizable()
@@ -24,11 +22,12 @@ struct ChoreRow: View {
                     .shadow(radius: 2)
             }
 
-            // Title + Description
+            // MARK: - Title & Description
             VStack(alignment: .leading, spacing: 4) {
                 Text(chore.title)
                     .font(.headline)
                     .foregroundColor(.white)
+
                 if let desc = chore.description, !desc.isEmpty {
                     Text(desc)
                         .font(.subheadline)
@@ -39,27 +38,29 @@ struct ChoreRow: View {
 
             Spacer()
 
-            // Child controls
-            if let user = store.currentUser, !user.isParent, chore.assignedTo == user.id {
-                if !chore.isCompleted && !chore.isMarkedDoneByChild {
-                    Button("Mark Done") {
-                        store.toggleChoreDoneByChild(chore)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
-                } else if chore.isMarkedDoneByChild {
-                    Button("Undo") {
-                        store.toggleChoreDoneByChild(chore)
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(.orange)
-                } else if chore.isCompleted {
+            // MARK: - Child Controls
+            if let user = store.currentUser,
+               !user.isParent,
+               chore.assignedTo == user.id {
+
+                if chore.isCompleted {
+
+                    // Approved by parent
                     Text("Approved ✅")
                         .foregroundColor(.green)
                         .font(.caption)
                         .padding(6)
                         .background(Color.black.opacity(0.3))
                         .cornerRadius(8)
+
+                } else {
+
+                    // Mark Done / Undo (SAME button, toggles)
+                    Button(chore.isMarkedDoneByChild ? "Undo" : "Mark Done") {
+                        store.toggleChoreDoneByChild(chore)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(chore.isMarkedDoneByChild ? .orange : .green)
                 }
             }
         }

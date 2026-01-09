@@ -1,17 +1,32 @@
+//
+//  HousePointStore.swift
+//  HousePoint
+//
+//  Created by Fatom
+//
+
 import Foundation
 import SwiftUI
 import UserNotifications
 
 class HousePointStore: ObservableObject {
+
+    // MARK: - Published Data
     @Published var users: [User] = []
     @Published var chores: [Chore] = []
     @Published var rewards: [Reward] = []
     @Published var pendingRewardRequests: [PendingReward] = []
     @Published var currentUserId: UUID? = nil { didSet { saveData() } }
 
+    // MARK: - Constants
+    let minimumPointsToRedeem = 25
+
     // MARK: - Initialization
     init() {
         loadData()
+        requestNotificationPermission()
+
+        // Ensure a default parent exists
         if !users.contains(where: { $0.isParent }) {
             let parent = User(
                 id: UUID(),
@@ -24,6 +39,18 @@ class HousePointStore: ObservableObject {
             users.append(parent)
             saveData()
         }
+    }
+
+    // MARK: - Notifications Permission
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(
+            options: [.alert, .sound, .badge]
+        ) { _, _ in }
+    }
+
+    private func isQuietHours() -> Bool {
+        let hour = Calendar.current.component(.hour, from: Date())
+        return hour >= 20 || hour < 8
     }
 
     // MARK: - Current User & Family
@@ -50,7 +77,7 @@ class HousePointStore: ObservableObject {
         return rewards.filter { $0.familyId == familyId }
     }
 
-    // MARK: - Login & Registration
+    // MARK: - Login & Logout
     func login(username: String, password: String = "") -> Bool {
         if let user = users.first(where: {
             $0.username.lowercased() == username.lowercased() &&
@@ -62,36 +89,56 @@ class HousePointStore: ObservableObject {
         return false
     }
 
+    func logout() {
+        currentUserId = nil
+        saveData()
+    }
+
+    // MARK: - Parent Registration
     func registerParent(username: String, password: String) -> String? {
-        if users.contains(where: { $0.username.lowercased() == username.lowercased() }) {
-            return "Username is already taken."
+        let trimmedUsername = username.trimmingCharacters(in: .whitespaces)
+        let trimmedPassword = password.trimmingCharacters(in: .whitespaces)
+
+        guard !trimmedUsername.isEmpty else { return "Username cannot be empty" }
+        guard !trimmedPassword.isEmpty else { return "Password cannot be empty" }
+
+        if users.contains(where: { $0.username.lowercased() == trimmedUsername.lowercased() }) {
+            return "Username already exists"
         }
 
-        let familyId = UUID()
-        let parent = User(
+        let newParent = User(
             id: UUID(),
-            username: username,
-            password: password,
+            username: trimmedUsername,
+            password: trimmedPassword,
             points: 0,
             isParent: true,
-            familyId: familyId
+            familyId: UUID()
         )
 
-        users.append(parent)
-        currentUserId = parent.id
+        users.append(newParent)
         saveData()
         return nil
     }
 
+    // MARK: - Rewards Deny
+    func denyReward(_ request: PendingReward) {
+        guard let index = pendingRewardRequests.firstIndex(where: { $0.id == request.id }) else { return }
+        pendingRewardRequests.remove(at: index)
+        saveData()
+    }
+
+    // MARK: - Child Management
     func addChild(username: String) -> Bool {
         guard let parent = currentUser, parent.isParent else { return false }
 
         let trimmed = username.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return false }
 
-        if users.contains(where: { $0.username.lowercased() == trimmed.lowercased() }) { return false }
+        if users.contains(where: { $0.username.lowercased() == trimmed.lowercased() }) {
+            return false
+        }
 
-        let newChild = User(
+        let child = User(
             id: UUID(),
             username: trimmed,
             password: "",
@@ -100,88 +147,80 @@ class HousePointStore: ObservableObject {
             familyId: parent.familyId
         )
 
-        users.append(newChild)
+        users.append(child)
         saveData()
         return true
-    }
-
-    func logout() {
-        currentUserId = nil
-        saveData()
     }
 
     // MARK: - Chores
     func assignChore(_ chore: Chore, to user: User) {
         guard user.familyId == currentFamilyId else { return }
+
         if let index = chores.firstIndex(where: { $0.id == chore.id }) {
             chores[index].assignedTo = user.id
             chores[index].isCompleted = false
             chores[index].isMarkedDoneByChild = false
             chores[index].familyId = user.familyId
+
+            sendChoreAssignedNotification(to: user, chore: chores[index])
+            scheduleChoreReminder(for: chores[index], user: user)
             saveData()
         }
     }
 
-    func markChoreDoneByChild(_ chore: Chore) {
-        guard let choreIndex = chores.firstIndex(where: { $0.id == chore.id }),
-              let userId = chores[choreIndex].assignedTo,
-              let userIndex = users.firstIndex(where: { $0.id == userId }) else { return }
+    func toggleChoreDoneByChild(_ chore: Chore) {
+        guard let cIndex = chores.firstIndex(where: { $0.id == chore.id }),
+              let uId = chores[cIndex].assignedTo,
+              let uIndex = users.firstIndex(where: { $0.id == uId }) else { return }
 
-        chores[choreIndex].isMarkedDoneByChild = true
-        chores[choreIndex].isCompleted = false
-        users[userIndex].pendingPoints += 10
+        if chores[cIndex].isMarkedDoneByChild {
+            // Undo marking done
+            chores[cIndex].isMarkedDoneByChild = false
+            users[uIndex].pendingPoints -= chores[cIndex].basePoints
+        } else {
+            // Mark done
+            chores[cIndex].isMarkedDoneByChild = true
+            users[uIndex].pendingPoints += chores[cIndex].basePoints
+        }
         saveData()
     }
 
     func approveChore(_ chore: Chore) {
-        guard let choreIndex = chores.firstIndex(where: { $0.id == chore.id }),
-              let userId = chores[choreIndex].assignedTo,
-              let userIndex = users.firstIndex(where: { $0.id == userId }) else { return }
+        guard let cIndex = chores.firstIndex(where: { $0.id == chore.id }),
+              let uId = chores[cIndex].assignedTo,
+              let uIndex = users.firstIndex(where: { $0.id == uId }) else { return }
 
-        chores[choreIndex].isCompleted = true
-        chores[choreIndex].isMarkedDoneByChild = false
+        chores[cIndex].isCompleted = true
+        chores[cIndex].isMarkedDoneByChild = false
 
-        let earned = min(10, users[userIndex].pendingPoints)
-        users[userIndex].pendingPoints -= earned
-        users[userIndex].points += earned
+        let earned = min(chores[cIndex].basePoints, users[uIndex].pendingPoints)
+        users[uIndex].pendingPoints -= earned
+        users[uIndex].points += earned
+
+        sendChoreApprovedNotification(to: users[uIndex], chore: chores[cIndex])
         saveData()
     }
 
-    func unapproveChore(_ chore: Chore) {
-        guard let choreIndex = chores.firstIndex(where: { $0.id == chore.id }),
-              let userId = chores[choreIndex].assignedTo,
-              let userIndex = users.firstIndex(where: { $0.id == userId }) else { return }
-
-        chores[choreIndex].isCompleted = false
-        let removedPoints = min(10, users[userIndex].points)
-        users[userIndex].points -= removedPoints
-        users[userIndex].pendingPoints += removedPoints
-        saveData()
-    }
-
-    // MARK: - Chore Image Handling
+    // MARK: - Add Image to Chore
     func addImage(_ image: UIImage, to chore: Chore) {
-        if let index = chores.firstIndex(where: { $0.id == chore.id }),
-           let data = image.jpegData(compressionQuality: 0.8) {
-            chores[index].imageData = data
-            saveData()
-        }
-    }
-
-    func removeImage(from chore: Chore) {
-        if let index = chores.firstIndex(where: { $0.id == chore.id }) {
-            chores[index].imageData = nil
-            saveData()
-        }
+        guard let index = chores.firstIndex(where: { $0.id == chore.id }) else { return }
+        chores[index].image = image
+        saveData()
     }
 
     // MARK: - Rewards
     func requestReward(_ reward: Reward, by user: User) {
-        guard user.familyId == currentFamilyId else { return }
-        if !pendingRewardRequests.contains(where: { $0.userId == user.id && $0.reward.id == reward.id }) {
-            var r = reward
-            r.familyId = user.familyId
-            let item = PendingReward(id: UUID(), userId: user.id, reward: r)
+        // Only allow request if user has enough points
+        guard user.points >= reward.cost else { return }
+
+        if !pendingRewardRequests.contains(where: {
+            $0.userId == user.id && $0.reward.id == reward.id
+        }) {
+            let item = PendingReward(
+                id: UUID(),
+                userId: user.id,
+                reward: reward
+            )
             pendingRewardRequests.append(item)
             saveData()
         }
@@ -190,15 +229,57 @@ class HousePointStore: ObservableObject {
     func approveReward(_ request: PendingReward) {
         guard let rIndex = pendingRewardRequests.firstIndex(where: { $0.id == request.id }),
               let uIndex = users.firstIndex(where: { $0.id == request.userId }) else { return }
+
         let cost = pendingRewardRequests[rIndex].reward.cost
         users[uIndex].points = max(0, users[uIndex].points - cost)
         pendingRewardRequests.remove(at: rIndex)
         saveData()
     }
 
-    func denyReward(_ request: PendingReward) {
-        pendingRewardRequests.removeAll { $0.id == request.id }
-        saveData()
+    // MARK: - Notifications
+    private func sendChoreAssignedNotification(to user: User, chore: Chore) {
+        if isQuietHours() { return }
+        let content = UNMutableNotificationContent()
+        content.title = "New Chore 🧹"
+        content.body = "\(chore.title) was assigned to you!"
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        )
+    }
+
+    private func sendChoreApprovedNotification(to user: User, chore: Chore) {
+        if isQuietHours() { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Chore Approved 🎉"
+        content.body = "Great job! \(chore.title) was approved!"
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        )
+    }
+
+    private func scheduleChoreReminder(for chore: Chore, user: User) {
+        guard let dueDate = chore.dueDate else { return }
+        if isQuietHours() { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = "Chore Reminder ⏰"
+        content.body = "Don't forget: \(chore.title)"
+        content.sound = .default
+
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: dueDate),
+            repeats: false
+        )
+
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(identifier: chore.id.uuidString, content: content, trigger: trigger)
+        )
     }
 
     // MARK: - Save & Load
@@ -211,12 +292,24 @@ class HousePointStore: ObservableObject {
 
     func loadData() {
         if let data = UserDefaults.standard.data(forKey: "users"),
-           let decoded = try? JSONDecoder().decode([User].self, from: data) { users = decoded }
+           let decoded = try? JSONDecoder().decode([User].self, from: data) {
+            users = decoded
+        }
+
         if let data = UserDefaults.standard.data(forKey: "chores"),
-           let decoded = try? JSONDecoder().decode([Chore].self, from: data) { chores = decoded }
+           let decoded = try? JSONDecoder().decode([Chore].self, from: data) {
+            chores = decoded
+        }
+
         if let data = UserDefaults.standard.data(forKey: "rewards"),
-           let decoded = try? JSONDecoder().decode([Reward].self, from: data) { rewards = decoded }
+           let decoded = try? JSONDecoder().decode([Reward].self, from: data) {
+            rewards = decoded
+        }
+
         if let data = UserDefaults.standard.data(forKey: "pendingRewards"),
-           let decoded = try? JSONDecoder().decode([PendingReward].self, from: data) { pendingRewardRequests = decoded }
+           let decoded = try? JSONDecoder().decode([PendingReward].self, from: data) {
+            pendingRewardRequests = decoded
+        }
     }
+
 }

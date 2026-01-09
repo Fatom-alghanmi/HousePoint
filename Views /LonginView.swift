@@ -1,10 +1,3 @@
-//
-//  LonginView.swift
-//  HousePoint
-//
-//  Created by Fatom on 2025-12-24.
-//
-
 import SwiftUI
 
 struct LoginView: View {
@@ -12,32 +5,66 @@ struct LoginView: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 30) {
-                Text("HousePoint")
-                    .font(.system(size: 40, weight: .bold))
-                    .padding(.top, 50)
+            ZStack {
+                // 🌙 Soft Dark Background
+                LinearGradient(
+                    colors: [Color.black, Color(red: 0.12, green: 0.12, blue: 0.18)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
-                NavigationLink("Parent Login") {
-                    ParentLoginView()
+                VStack(spacing: 30) {
+
+                    Spacer()
+
+                    // 🏠 App Title
+                    VStack(spacing: 8) {
+                        Text("HousePoint")
+                            .font(.system(size: 42, weight: .bold))
+                            .foregroundColor(.white)
+
+                        Text("Turn chores into rewards ⭐")
+                            .foregroundColor(.gray)
+                    }
+
+                    Spacer()
+
+                    // 👨‍👩‍👧 Login Buttons
+                    VStack(spacing: 18) {
+                        NavigationLink {
+                            ParentLoginView()
+                        } label: {
+                            Label("Parent Login", systemImage: "lock.shield")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        NavigationLink {
+                            KidLoginView()
+                        } label: {
+                            Label("Kid Login", systemImage: "star.fill")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+
+                    Divider()
+                        .background(Color.gray.opacity(0.3))
+                        .padding(.horizontal)
+
+                    // 📝 Register Parent
+                    NavigationLink {
+                        RegisterView()
+                    } label: {
+                        Text("Register Parent")
+                            .foregroundColor(.gray)
+                    }
+
+                    Spacer()
                 }
-                .buttonStyle(.borderedProminent)
-
-                NavigationLink("Kid Login") {
-                    KidLoginView()
-                }
-                .buttonStyle(.bordered)
-
-                Divider()
-                    .padding(.horizontal)
-
-                NavigationLink("Register Parent") {
-                    RegisterView()
-                }
-                .buttonStyle(.bordered)
-
-                Spacer()
+                .padding()
             }
-            .padding()
         }
     }
 }

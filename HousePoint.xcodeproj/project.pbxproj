@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		14667F6A2E86EBF0004F4A30 /* HousePointApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14667F692E86EBF0004F4A30 /* HousePointApp.swift */; };
 		14667F6E2E86EBF2004F4A30 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 14667F6D2E86EBF2004F4A30 /* Assets.xcassets */; };
+		14F93E952F115AF500319657 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 14F93E942F115AF500319657 /* ConfettiSwiftUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				14F93E952F115AF500319657 /* ConfettiSwiftUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,6 +130,7 @@
 			);
 			name = HousePoint;
 			packageProductDependencies = (
+				14F93E942F115AF500319657 /* ConfettiSwiftUI */,
 			);
 			productName = HousePoint;
 			productReference = 149FEFAF2EE6165C005664D9 /* HousePoint.app */;
@@ -211,6 +214,9 @@
 			);
 			mainGroup = 14667F5D2E86EBF0004F4A30;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				14F93E932F115A4300319657 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 14667F672E86EBF0004F4A30 /* Products */;
 			projectDirPath = "";
@@ -576,6 +582,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		14F93E932F115A4300319657 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		14F93E942F115AF500319657 /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 14F93E932F115A4300319657 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 14667F5E2E86EBF0004F4A30 /* Project object */;
 }
