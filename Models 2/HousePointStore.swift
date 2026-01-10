@@ -151,6 +151,26 @@ class HousePointStore: ObservableObject {
         saveData()
         return true
     }
+    
+    // MARK: - Child Management
+
+    func removeChild(_ child: User) {
+        guard let parent = currentUser, parent.isParent else { return }
+        guard !child.isParent else { return } // cannot remove parent
+        guard let index = users.firstIndex(where: { $0.id == child.id }) else { return }
+
+        // Optional: Remove child's chores
+        chores.removeAll { $0.assignedTo == child.id }
+
+        // Optional: Remove pending rewards by this child
+        pendingRewardRequests.removeAll { $0.userId == child.id }
+
+        // Remove child from users
+        users.remove(at: index)
+
+        saveData()
+    }
+
 
     // MARK: - Chores
     func assignChore(_ chore: Chore, to user: User) {

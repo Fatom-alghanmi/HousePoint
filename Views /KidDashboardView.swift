@@ -1,3 +1,10 @@
+//
+//  KidDashboardView.swift
+//  HousePoint
+//
+//  Updated by Fatom
+//
+
 import SwiftUI
 
 struct KidDashboardView: View {
@@ -7,7 +14,10 @@ struct KidDashboardView: View {
     @State private var showAlert = false
     @State private var alertText = ""
 
-    // MARK: - Computed Properties for Chores
+    var user: User? {
+        store.users.first { $0.id == currentUserId }
+    }
+
     var assignedChores: [Chore] {
         store.chores.filter { $0.assignedTo == currentUserId && !$0.isCompleted }
     }
@@ -22,7 +32,6 @@ struct KidDashboardView: View {
 
     var body: some View {
         ZStack {
-            // Gradient Background
             LinearGradient(colors: [.purple.opacity(0.6), .blue.opacity(0.5), .pink.opacity(0.4)],
                            startPoint: .topLeading,
                            endPoint: .bottomTrailing)
@@ -30,8 +39,7 @@ struct KidDashboardView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    if let user = store.users.first(where: { $0.id == currentUserId }) {
-                        // User Info
+                    if let user = user {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Hi \(user.username)! 🎉")
                                 .font(.largeTitle)
@@ -45,7 +53,7 @@ struct KidDashboardView: View {
                         .background(Color.black.opacity(0.3))
                         .cornerRadius(12)
 
-                        // MARK: - Assigned Chores
+                        // Assigned Chores
                         if !assignedChores.isEmpty {
                             Text("🧹 Assigned Chores")
                                 .font(.headline)
@@ -55,7 +63,7 @@ struct KidDashboardView: View {
                             }
                         }
 
-                        // MARK: - Pending Chores
+                        // Pending Chores
                         if !pendingChores.isEmpty {
                             Text("⏳ Pending Approval")
                                 .font(.headline)
@@ -65,7 +73,7 @@ struct KidDashboardView: View {
                             }
                         }
 
-                        // MARK: - Approved Chores
+                        // Approved Chores
                         if !approvedChores.isEmpty {
                             Text("✅ Approved Chores")
                                 .font(.headline)
@@ -75,25 +83,13 @@ struct KidDashboardView: View {
                             }
                         }
 
-                        // MARK: - Redeem Reward Button
-                        Button(action: {
-                            if user.points < store.minimumPointsToRedeem {
-                                alertText = "Not enough points!"
-                            } else if let reward = store.rewards.first {
-                                store.requestReward(reward, by: user)
-                                alertText = "Reward request sent to parent!"
-                            } else {
-                                alertText = "No rewards available!"
-                            }
-                            showAlert = true
-                        }) {
+                        // Redeem Reward
+                        Button(action: redeemReward) {
                             Text("Redeem Reward (\(store.minimumPointsToRedeem) points)")
                                 .bold()
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(
-                                    LinearGradient(colors: [.yellow, .orange], startPoint: .leading, endPoint: .trailing)
-                                )
+                                .background(LinearGradient(colors: [.yellow, .orange], startPoint: .leading, endPoint: .trailing))
                                 .foregroundColor(.white)
                                 .cornerRadius(12)
                                 .shadow(radius: 5)
@@ -106,5 +102,19 @@ struct KidDashboardView: View {
         }
         .alert(alertText, isPresented: $showAlert) { Button("OK", role: .cancel) {} }
         .navigationTitle("Kid Dashboard")
+    }
+
+    private func redeemReward() {
+        guard let user = user else { return }
+
+        if user.points < store.minimumPointsToRedeem {
+            alertText = "Not enough points!"
+        } else if let reward = store.rewards.first {
+            store.requestReward(reward, by: user)
+            alertText = "Reward request sent to parent!"
+        } else {
+            alertText = "No rewards available!"
+        }
+        showAlert = true
     }
 }

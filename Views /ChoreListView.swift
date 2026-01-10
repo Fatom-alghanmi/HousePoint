@@ -13,37 +13,35 @@ struct ChoreListView: View {
             VStack(spacing: 16) {
                 ForEach(store.choresInFamily) { chore in
                     VStack(spacing: 0) {
-                        // Chore row for display
+                        // Chore display
                         ChoreRow(chore: chore)
                             .environmentObject(store)
 
                         // Parent controls
                         if store.currentUser?.isParent == true {
                             VStack(spacing: 8) {
+                                // Add/Change image button
                                 Button("Add / Change Image") {
                                     currentChoreForImage = chore
+                                    selectedImage = nil
                                     showImagePicker = true
                                 }
                                 .buttonStyle(.borderedProminent)
                                 .tint(.blue)
 
+                                // Assignment picker
                                 HStack {
                                     Text("Assigned to:")
                                         .foregroundColor(.white)
                                     Picker("", selection: bindingForChore(chore)) {
-                                        Text("Unassigned")
-                                            .foregroundColor(.white)
-                                            .tag(UUID?.none)
+                                        Text("Unassigned").tag(UUID?.none)
                                         ForEach(store.childrenInFamily) { child in
-                                            Text(child.username)
-                                                .foregroundColor(.white)
-                                                .tag(Optional(child.id))
+                                            Text(child.username).tag(Optional(child.id))
                                         }
                                     }
                                     .pickerStyle(MenuPickerStyle())
                                     .accentColor(.black)
                                 }
-
                             }
                             .padding(.horizontal)
                             .padding(.bottom, 8)
@@ -65,6 +63,7 @@ struct ChoreListView: View {
             )
             .ignoresSafeArea()
         )
+        // Image Picker Sheet
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(image: $selectedImage)
                 .onDisappear {
@@ -77,12 +76,12 @@ struct ChoreListView: View {
         }
     }
 
-    // MARK: - Parent Picker Binding
+    // MARK: - Chore Assignment Binding
     private func bindingForChore(_ chore: Chore) -> Binding<UUID?> {
         guard let index = store.chores.firstIndex(where: { $0.id == chore.id }) else {
             return .constant(nil)
         }
-        return Binding<UUID?>(
+        return Binding(
             get: { store.chores[index].assignedTo },
             set: { newValue in
                 if let id = newValue,

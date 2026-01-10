@@ -29,20 +29,25 @@ struct ParentDashboardView: View {
     }
 }
 
-// MARK: - Kids Section with Add Kid Button
+// MARK: - Kids Section with Add & Remove Kid
 
 struct KidsSectionView: View {
     @EnvironmentObject var store: HousePointStore
 
     @State private var showAddKidAlert = false
     @State private var newKidName = ""
+    @State private var kidToRemove: User?
+    @State private var showRemoveAlert = false
 
     var body: some View {
         SectionView(title: "🧒 Kids Dashboard") {
             VStack(spacing: 8) {
                 // List of kids
                 ForEach(store.childrenInFamily) { kid in
-                    KidRow(kid: kid)
+                    KidRow(kid: kid, removeAction: {
+                        kidToRemove = kid
+                        showRemoveAlert = true
+                    })
                 }
 
                 // Add Kid Button
@@ -67,6 +72,19 @@ struct KidsSectionView: View {
                     Text("Enter the name of the new child.")
                 })
             }
+            .alert("Remove Kid?", isPresented: $showRemoveAlert, actions: {
+                Button("Remove", role: .destructive) {
+                    if let kid = kidToRemove {
+                        store.removeChild(kid)
+                        kidToRemove = nil
+                    }
+                }
+                Button("Cancel", role: .cancel) {
+                    kidToRemove = nil
+                }
+            }, message: {
+                Text("Are you sure you want to remove this child?")
+            })
         }
     }
 
@@ -81,29 +99,40 @@ struct KidsSectionView: View {
     }
 }
 
-// MARK: - Kid Row
+// MARK: - Kid Row with Remove Button
 
 struct KidRow: View {
     @EnvironmentObject var store: HousePointStore
     var kid: User
+    var removeAction: () -> Void
 
     var body: some View {
-        NavigationLink(value: kid.id) {
-            HStack {
-                Text(kid.username)
-                    .bold()
-                    .foregroundColor(.white)
-                Spacer()
-                Text("⭐ \(kid.points)  ⏳ \(kid.pendingPoints)")
-                    .font(.subheadline)
-                    .foregroundColor(.yellow)
+        HStack {
+            NavigationLink(value: kid.id) {
+                HStack {
+                    Text(kid.username)
+                        .bold()
+                        .foregroundColor(.white)
+                    Spacer()
+                    Text("⭐ \(kid.points)  ⏳ \(kid.pendingPoints)")
+                        .font(.subheadline)
+                        .foregroundColor(.yellow)
+                }
+                .padding()
+                .background(Color.blue.opacity(0.7))
+                .cornerRadius(12)
             }
-            .padding()
-            .background(Color.blue.opacity(0.7))
-            .cornerRadius(12)
-        }
-        .navigationDestination(for: UUID.self) { id in
-            ChildApprovalView(childId: id).environmentObject(store)
+            .navigationDestination(for: UUID.self) { id in
+                ChildApprovalView(childId: id)
+                    .environmentObject(store)
+            }
+
+            // Remove Button
+            Button(action: removeAction) {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+                    .padding(8)
+            }
         }
     }
 }

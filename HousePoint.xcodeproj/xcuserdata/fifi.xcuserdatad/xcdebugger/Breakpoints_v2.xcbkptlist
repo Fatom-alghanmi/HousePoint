@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "9399447C-E1F3-4192-8C22-8226CF8B8D66"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.AddressBreakpoint">
+         <BreakpointContent
+            uuid = "73BC4662-E9E6-4376-95C8-2B0BC045E68B"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            symbolName = "*0x105d4ed8c">
+            <Locations>
+               <Location
+                  uuid = "73BC4662-E9E6-4376-95C8-2B0BC045E68B - e6f57574168f85d"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "property wrapper backing initializer of HousePoint.ChoreListView.selectedImage : Swift.Optional&lt;__C.UIImage&gt;"
+                  moduleName = "HousePoint.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/fifi/Documents/HousePoint/HousePoint/Views%20/ChoreListView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
