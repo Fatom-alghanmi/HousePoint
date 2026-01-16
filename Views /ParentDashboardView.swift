@@ -1,7 +1,6 @@
 import SwiftUI
 
 // MARK: - Parent Dashboard
-
 struct ParentDashboardView: View {
     @EnvironmentObject var store: HousePointStore
 
@@ -30,15 +29,15 @@ struct ParentDashboardView: View {
 }
 
 // MARK: - Kids Section with Add & Remove Kid
-
 struct KidsSectionView: View {
     @EnvironmentObject var store: HousePointStore
-
-    @State private var showAddKidAlert = false
+    
+    @State private var showAddKidSheet = false
     @State private var newKidName = ""
+    @State private var addKidErrorMessage = ""      // dynamic error message
     @State private var kidToRemove: User?
     @State private var showRemoveAlert = false
-
+    
     var body: some View {
         SectionView(title: "🧒 Kids Dashboard") {
             VStack(spacing: 8) {
@@ -49,10 +48,12 @@ struct KidsSectionView: View {
                         showRemoveAlert = true
                     })
                 }
-
+                
                 // Add Kid Button
                 Button(action: {
-                    showAddKidAlert = true
+                    newKidName = ""
+                    addKidErrorMessage = ""
+                    showAddKidSheet = true
                 }) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
@@ -64,14 +65,77 @@ struct KidsSectionView: View {
                     .background(Color.green.opacity(0.7))
                     .cornerRadius(12)
                 }
-                .alert("Add New Kid", isPresented: $showAddKidAlert, actions: {
-                    TextField("Kid's name", text: $newKidName)
-                    Button("Add", action: addKid)
-                    Button("Cancel", role: .cancel) {}
-                }, message: {
-                    Text("Enter the name of the new child.")
-                })
+                // MARK: - Add Kid Sheet UI
+                .sheet(isPresented: $showAddKidSheet) {
+                    VStack(spacing: 20) {
+                        // Title
+                        Text("Add New Kid")
+                            .font(.title2)
+                            .bold()
+                            .foregroundColor(.purple)
+                        
+                        // TextField with nice styling
+                        TextField("Kid's name", text: $newKidName)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .shadow(color: Color.black.opacity(0.15), radius: 5, x: 0, y: 2)
+                        
+                        // Dynamic error message
+                        if !addKidErrorMessage.isEmpty {
+                            Text(addKidErrorMessage)
+                                .foregroundColor(.red)
+                                .font(.subheadline)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
+                        
+                        // Buttons
+                        HStack(spacing: 15) {
+                            Button(action: {
+                                showAddKidSheet = false
+                                newKidName = ""
+                                addKidErrorMessage = ""
+                            }) {
+                                Text("Cancel")
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.gray)
+                                    .cornerRadius(12)
+                                    .shadow(radius: 3)
+                            }
+
+                            Button(action: {
+                                if let error = store.addChild(username: newKidName) {
+                                    addKidErrorMessage = error
+                                } else {
+                                    showAddKidSheet = false
+                                    newKidName = ""
+                                    addKidErrorMessage = ""
+                                }
+                            }) {
+                                Text("Add")
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.green)
+                                    .cornerRadius(12)
+                                    .shadow(radius: 3)
+                            }
+                        }
+                    }
+                    .padding(30)
+                    .background(
+                        RoundedRectangle(cornerRadius: 25)
+                            .fill(Color(UIColor.systemGray6))
+                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+                    )
+                    .padding()
+                }
+
             }
+            // MARK: - Remove Kid Alert
             .alert("Remove Kid?", isPresented: $showRemoveAlert, actions: {
                 Button("Remove", role: .destructive) {
                     if let kid = kidToRemove {
@@ -87,20 +151,9 @@ struct KidsSectionView: View {
             })
         }
     }
-
-    // MARK: - Add Kid Action
-    private func addKid() {
-        let success = store.addChild(username: newKidName)
-        if !success {
-            // Optional: show error alert if name is empty or duplicate
-            print("Failed to add kid. Name might be empty or already exists.")
-        }
-        newKidName = ""
-    }
 }
 
 // MARK: - Kid Row with Remove Button
-
 struct KidRow: View {
     @EnvironmentObject var store: HousePointStore
     var kid: User
@@ -138,7 +191,6 @@ struct KidRow: View {
 }
 
 // MARK: - Chores Section
-
 struct ChoresSectionView: View {
     @EnvironmentObject var store: HousePointStore
 
@@ -153,7 +205,6 @@ struct ChoresSectionView: View {
 }
 
 // MARK: - Rewards Section
-
 struct RewardsSectionView: View {
     @EnvironmentObject var store: HousePointStore
 
@@ -168,7 +219,6 @@ struct RewardsSectionView: View {
 }
 
 // MARK: - Pending Reward Requests Section
-
 struct PendingRewardsSectionView: View {
     @EnvironmentObject var store: HousePointStore
 
@@ -220,7 +270,6 @@ struct PendingRewardRow: View {
 }
 
 // MARK: - Reusable Section & Button
-
 struct SectionView<Content: View>: View {
     let title: String
     let content: Content

@@ -128,14 +128,14 @@ class HousePointStore: ObservableObject {
     }
 
     // MARK: - Child Management
-    func addChild(username: String) -> Bool {
-        guard let parent = currentUser, parent.isParent else { return false }
+    func addChild(username: String) -> String? {   // <- return optional error message
+        guard let parent = currentUser, parent.isParent else { return "Only a parent can add a child." }
 
         let trimmed = username.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return false }
+        guard !trimmed.isEmpty else { return "Child name cannot be empty." }
 
-        if users.contains(where: { $0.username.lowercased() == trimmed.lowercased() }) {
-            return false
+        if users.contains(where: { $0.username.lowercased() == trimmed.lowercased() && $0.familyId == parent.familyId }) {
+            return "This child name already exists in your family."
         }
 
         let child = User(
@@ -149,8 +149,9 @@ class HousePointStore: ObservableObject {
 
         users.append(child)
         saveData()
-        return true
+        return nil  // success
     }
+
     
     // MARK: - Child Management
 

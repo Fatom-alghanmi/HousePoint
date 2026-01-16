@@ -56,10 +56,14 @@ struct AddChildView: View {
     }
 
     private func addChild() {
-        if store.addChild(username: username) {
-            presentationMode.wrappedValue.dismiss()
-        } else {
+        if let error = store.addChild(username: username) {
+            // There was an error → show it
             showError = true
+            print("Error adding child: \(error)") // optional, for debugging
+        } else {
+            // Success → dismiss
+            presentationMode.wrappedValue.dismiss()
         }
     }
+
 }
